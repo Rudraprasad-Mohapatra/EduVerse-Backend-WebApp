@@ -42,9 +42,6 @@ const register = async (req, res, next) => {
     user.password = undefined;
 
     const token = await user.generateJWTtoken();
-    cookieOptions = {
-
-    }
     res.cookie('token', token, cookieOptions);
     res.status(201).json({
         success: true,
@@ -52,7 +49,7 @@ const register = async (req, res, next) => {
         user
     })
 }
-const login = async (req, res) => {
+const login = async (req, res,next) => {
     try {
         const { email, password } = req.body;
 
@@ -63,12 +60,11 @@ const login = async (req, res) => {
         const user = await User.findOne({
             email
         }).select("+password");
-
         if (!user || !user.comparePassword(password)) {
             return next(new AppError("Email or password doesnot match", 400));
         }
 
-        const token = await user.genereateJWTtoken();
+        const token = await user.generateJWTtoken();
         user.password = undefined;
 
         res.cookie('token', token, cookieOptions);
