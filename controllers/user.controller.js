@@ -1,7 +1,7 @@
 import User from "../models/user.model.js"
 import AppError from "../utils/error.util.js";
 import cloudinary from "cloudinary";
-
+import fs from 'fs/promises';
 const cookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     hhtpOnly: true,
@@ -39,6 +39,7 @@ const register = async (req, res, next) => {
     // File Upload
 
     if (req.file) {
+        console.log(req.file);
         try {
             const result = await cloudinary.v2.uploader.upload(req.file.path, {
                 folder:'lms',
