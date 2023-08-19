@@ -1,5 +1,6 @@
 import User from "../models/user.model.js"
 import AppError from "../utils/error.util.js";
+import sendEmail from "../utils/sendEmail.js";
 import cloudinary from "cloudinary";
 import fs from 'fs/promises';
 const cookieOptions = {
@@ -42,12 +43,12 @@ const register = async (req, res, next) => {
         console.log(req.file);
         try {
             const result = await cloudinary.v2.uploader.upload(req.file.path, {
-                folder:'lms',
-                width:250,
+                folder: 'lms',
+                width: 250,
                 gravity: 'faces',
                 crop: 'fill'
             });
-            if(result) {
+            if (result) {
                 user.avatar.public_id = result.public_id;
                 user.avatar.secure_url = result.secure_url;
 
@@ -55,7 +56,7 @@ const register = async (req, res, next) => {
                 fs.rm(`uploads/${req.file.filename}`);
             }
         } catch (e) {
-            return next(new AppError(error || 'File not uploaded, please try again.',400));
+            return next(new AppError(error || 'File not uploaded, please try again.', 400));
         }
     }
 
@@ -126,9 +127,55 @@ const getProfile = async (req, res) => {
     }
 }
 
+const forgotPassword = async (req, res, next) => {
+    const { email } = req.body;
+    if (!email) {
+        return next(new AppError("Email is required", 400));
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        return next(new AppError("Email is not registered!", 400));
+    }
+
+    const resetToken = await user.generatePasswordResetToken();
+
+    await user.save();
+
+    const resetPasswordURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    console.log(resetPasswordURL);
+    
+    const subject = "Reset Password";
+
+    const message = `You can reset your password by clicking <a href=${resetPasswordURL} target="_blank" Reset your password> \n if the above link does not work for some reason then copy paste this link in new tab ${resetPasswordURL} \n If you have not requested this, kindly ignore `
+
+    try {
+        await sendEmail(email, subject, message);
+
+        res.status(200).json({
+            success: true,
+            message: `Reset passwordtoken has been sent to ${email} successfully from ${process.env.SMTP_FROM_EMAIL}.`
+        })
+    } catch (error) {
+        user.forgotPasswordExpiry = undefined;
+        user.forgotPasswordToken = undefined;
+
+        await user.save();
+        return next(new AppError(error.message, 500));
+    }
+}
+
+
+const resetPassword = () => {
+
+}
+
 export {
     register,
     login,
     logout,
-    getProfile
+    getProfile,
+    forgotPassword,
+    resetPassword
 }
