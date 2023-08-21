@@ -232,15 +232,14 @@ const changePassword = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     const { fullName } = req.body;
-    const { id } = req.user.id;
-
+    const { id } = req.user;
     const user = await User.findById(id);
 
     if (!user) {
         return next(new AppError("User does not exist!", 400));
     }
-
-    if (req.fullName) {
+    
+    if (req.body.fullName) {
         user.fullName = fullName;
     }
 
@@ -265,6 +264,7 @@ const updateUser = async (req, res, next) => {
         }
     }
     await user.save();
+    console.log(user.fullName)
     res.status(200).json({
         success: true,
         message: "User details updated successfully!"
