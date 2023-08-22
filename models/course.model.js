@@ -33,7 +33,7 @@ const courseSchema = new Schema({
         {
             title: String,
             description: String,
-            lecture: {
+            lectureThumbnail: {
                 public_id: {
                     type: String
                 },

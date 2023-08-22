@@ -130,11 +130,65 @@ const removeCourse = async (req, res, next) => {
     }
 }
 
+const addLectureToCourseById = async (req, res, next) => {
+    try {
+        const { title, description } = req.body;
+        const { id } = req.params;
+
+        if (!title || !description) {
+            return next(new AppError("Course with given id does not exist!"));
+        }
+
+        const course = await Course.findById(id);
+
+        if (!course) {
+            return next(new AppError("Course with given id does not exist", 500));
+        }
+
+        const lectureData = {
+            title,
+            description,
+            lectureThumbnail: {}
+        }
+
+        if (req.file) {
+            try {
+                const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                    folder: 'lms'
+                });
+                console.log(JSON.stringify(result));
+                if (result) {
+                    lectureData.lectureThumbnail.public_id = result.public_id;
+                    lectureData.lectureThumbnail.secure_url = result.secure_url;
+                }
+
+                fs.rm(`uploads/${req.file.filename}`);
+            } catch (e) {
+                return next(new AppError(e.message, 400));
+            }
+
+            course.lectures.push(lectureData);
+
+            course.numbersOfLectures = course.lectures.length;
+
+            await (course.save());
+
+            res.status(200).json({
+                success: true,
+                message: "Lectures successfully added to the course",
+                course,
+            });
+        }
+    } catch (e) {
+        return next(new AppError(e.message, 500));
+    }
+}
 
 export {
     getAllCourses,
     getLecturesByCourseId,
     createCourse,
     updateCourse,
-    removeCourse
+    removeCourse,
+    addLectureToCourseById
 }
