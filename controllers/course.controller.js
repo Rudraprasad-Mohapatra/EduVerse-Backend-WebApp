@@ -96,18 +96,18 @@ const updateCourse = async (req, res, next) => {
             }
         );
 
-        if(!course) {
+        if (!course) {
             return next(
                 new AppError("Course with given id does not exist", 500)
             );
         }
         return res.status(200).json({
-            success:true,
+            success: true,
             message: "Course updated Successfully!",
             course
         })
     } catch (e) {
-        return next(new AppError(e.message,500));
+        return next(new AppError(e.message, 500));
     }
 }
 
