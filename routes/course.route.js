@@ -14,6 +14,7 @@ courseRoutes.route("/:id")
     )
     .put(
         isLoggedIn,
+        authorizedRoles("ADMIN"),
         updateCourse
     )
     .delete(

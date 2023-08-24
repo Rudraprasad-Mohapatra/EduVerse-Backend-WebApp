@@ -6,7 +6,7 @@ import fs from 'fs/promises';
 import crypto from "crypto";
 const cookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    hhtpOnly: true,
+    httpOnly: true,
     secure: true
 }
 
