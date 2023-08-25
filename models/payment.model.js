@@ -15,7 +15,7 @@ const paymentSchema = new Schema({
     }
 }, {
     timestamps: true
-})
+});
 
 const Payment = model("payment", paymentSchema);
 

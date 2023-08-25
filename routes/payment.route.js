@@ -29,9 +29,14 @@ paymentRoutes.route("/verify")
     );
 
 paymentRoutes.route("/unsubscribe")
-    .post(isLoggedIn, cancelSubscription);
+    .post(isLoggedIn,
+        cancelSubscription
+    );
 
 paymentRoutes.route("/")
-    .get(isLoggedIn, authorizedRoles("ADMIN"), allPayments);
+    .get(isLoggedIn,
+        authorizedRoles("ADMIN"),
+        allPayments
+    );
 
 export default paymentRoutes;

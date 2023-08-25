@@ -15,12 +15,24 @@ const isLoggedIn = async function (req, res, next) {
 
 const authorizedRoles = (...roles) => async (req, res, next) => {
     const currentUserRole = req.user.role;
-    if(!roles.includes(currentUserRole)){
+    if (!roles.includes(currentUserRole)) {
         return next(new AppError("You do not have permission to access this route", 403));
+    }
+    next();
+}
+
+const authorizeSubscriber = async (req, res, next) => {
+    const subscription = req.user.suscription;
+    const currentUserRole = req.user.role;
+    if (currentUserRole !== "ADMIN" && subscription.status !== "active") {
+        return next(
+            new AppError("Please subscribe to access this route!", 403)
+        );
     }
     next();
 }
 export {
     isLoggedIn,
-    authorizedRoles
+    authorizedRoles,
+    authorizeSubscriber
 }

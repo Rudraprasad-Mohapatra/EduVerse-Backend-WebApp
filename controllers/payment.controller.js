@@ -2,6 +2,7 @@ import AppError from "../utils/error.util.js";
 import User from "../models/user.model.js";
 import { razorpay } from "../server.js";
 import crypto from "crypto";
+import Payment from "../models/payment.model.js";
 const getRazorPayApiKey = async (req, res) => {
     res.status(200).json({
         success: true,
@@ -23,20 +24,22 @@ const buySubscription = async (req, res, next) => {
             return next(new AppError("Admin cannot purchase a subscription!", 400));
         }
         console.log(1.1);
-        try{
+
         const subscription = await razorpay.subscriptions.create({
-            plan_id: process.env.RAZORPAY_PLAN_ID,
-            customer_notify: 1
-        });}catch(e){
-            return next(new AppError(e.message,e.status));
-        }
+            // "plan_id": "plan_MU0QkvZuPMHFBS",
+            "plan_id": process.env.RAZORPAY_PLAN_ID,
+            "customer_notify": 1
+        });
+
         console.log(1.2);
         // console.log(Subscription);
         user.subscription.id = subscription.id;
         user.subscription.status = subscription.status;
         console.log(1.3);
+
         await user.save();
         console.log(1.4);
+
         res.status(200).json({
             success: true,
             message: "Subscribed successfully",
@@ -50,7 +53,9 @@ const buySubscription = async (req, res, next) => {
 const verifySubscription = async (req, res, next) => {
     const { id } = req.user;
     const {
-        razorpay_payment_id, razorpay_signature, razorpay_subscription_id
+        razorpay_payment_id,
+        razorpay_signature,
+        razorpay_subscription_id
     } = req.body;
 
     const user = await User.findById(id);
@@ -79,16 +84,48 @@ const verifySubscription = async (req, res, next) => {
     user.subscription.status = "active"
 
     await user.save();
+
     res.status(200).json({
         success: true,
         message: "Payment verified successfully!"
     });
 }
-const cancelSubscription = async (req, res) => {
 
+const cancelSubscription = async (req, res) => {
+    try {
+        const { id } = req.user;
+
+        const user = await User.findById(id);
+        if (!user) {
+            return next(new AppError("Unauthorized, please login"));
+        }
+        if (user.role === "ADMIN") {
+            return next(new AppError("Admin cannot purchase a subscription!", 400));
+        }
+
+        const subscription_id = user.subscription.id;
+
+        const subscription = await razorpay.subscriptions.cancel(subscription_id);
+
+        user.subscription.status = subscription.status;
+        await user.save();
+    } catch (e) {
+        return next(new AppError(e.message, e.status));
+    }
 }
 const allPayments = async (req, res) => {
+    const { count } = req.query;
 
+    const subscriptions = await razorpay.subscriptions.all({
+        count: count || 10
+    });
+
+    res.status(200).json({
+        success:true,
+        message:"All payments",
+        subscriptions
+    })
+    
 }
 
 export {
