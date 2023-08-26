@@ -6,6 +6,7 @@ const paymentRoutes = Router();
 import {
     getRazorPayApiKey,
     buySubscription,
+    fetchSubscriptionById,
     verifySubscription,
     cancelSubscription,
     allPayments
@@ -20,6 +21,11 @@ paymentRoutes.route("/subscribe")
     .post(
         isLoggedIn,
         buySubscription
+    );
+paymentRoutes.route("/subscriptions/:sub_id")
+    .get(
+        isLoggedIn,
+        fetchSubscriptionById
     );
 
 paymentRoutes.route("/verify")
