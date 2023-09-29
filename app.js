@@ -1,18 +1,20 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import { config } from 'dotenv';
 import morgan from 'morgan';
 import userRoutes from "./routes/user.route.js"
 import errorMiddleware from "./middlewares/error.middleware.js"
 import courseRoutes from "./routes/course.route.js";
 import paymentRoutes from './routes/payment.route.js';
 
+config();
 const app = express();
-
+const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 app.use(express.json());
 
 app.use(cors({
-    origin: [process.env.FRONTEND_URL],
+    origin: frontendUrl,
     credentials: true
 }));
 

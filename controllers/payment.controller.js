@@ -29,7 +29,7 @@ const buySubscription = async (req, res, next) => {
         }
 
         const subscription = await razorpay.subscriptions.create({
-            plan_id: "plan_MUeYYswH9t7yjv",
+            plan_id: "plan_MUlTuM1bfkcH9H",
             customer_notify: 1,
             quantity: 5,
             total_count: 6,
@@ -45,12 +45,15 @@ const buySubscription = async (req, res, next) => {
             notes: {
                 key1: "value3",
                 key2: "value2"
+            },
+            notify_info: {
+                notify_phone: +9123456789,
+                notify_email: "gaurav.kumar@example.com"
             }
         })
         // console.log(subscription);
         user.subscription.id = subscription.id;
         user.subscription.status = subscription.status;
-
         await user.save();
 
         res.status(200).json({
@@ -69,11 +72,11 @@ const fetchSubscriptionById = async (req, res, next) => {
         const { sub_id } = req.params;
         const subscriptionDetails = await razorpay.subscriptions.fetch(sub_id);
         res.status(200).json({
-            message:"Success",
+            message: "Success",
             subscriptionDetails
         })
     } catch (err) {
-        return next(new AppError(err.message,err.status));
+        return next(new AppError(err.message, err.status));
     }
 }
 const verifySubscription = async (req, res, next) => {
