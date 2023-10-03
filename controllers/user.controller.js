@@ -1,4 +1,5 @@
-import User from "../models/user.model.js"
+import User from "../models/user.model.js";
+import Contact from "../models/contact.model.js";
 import AppError from "../utils/error.util.js";
 import sendEmail from "../utils/sendEmail.js";
 import cloudinary from "cloudinary";
@@ -11,67 +12,76 @@ const cookieOptions = {
 }
 
 const register = async (req, res, next) => {
-    const { fullName, email, password,role } = req.body;
+    try {
+        const { fullName, email, password, role } = req.body;
 
-    if (!fullName || !email || !password) {
-        return next(new AppError("All fields are required", 400));
-    }
-
-    const userExists = await User.findOne({ email });
-
-    if (userExists) {
-        return next(new AppError('Email already exists', 400));
-    }
-
-    const user = await User.create({
-        fullName,
-        email,
-        password,
-        avatar: {
-            public_id: email,
-            secure_url: "https://res.cloudinary.com/demo/image/gravatar/w_120,h_80,c_fill/e3264cf16f34ecd3c7c564f5668cbc1e.jpg"
-        },
-        role
-    });
-
-    if (!user) {
-        return next(new AppError("User resgistration failed, please try again."), 400);
-    }
-
-    // File Upload
-
-    if (req.file) {
-        console.log(req.file);
-        try {
-            const result = await cloudinary.v2.uploader.upload(req.file.path, {
-                folder: 'lms',
-                width: 250,
-                gravity: 'faces',
-                crop: 'fill'
-            });
-            if (result) {
-                user.avatar.public_id = result.public_id;
-                user.avatar.secure_url = result.secure_url;
-
-                // Remove file
-                fs.rm(`uploads/${req.file.filename}`);
-            }
-        } catch (e) {
-            return next(new AppError(error || 'File not uploaded, please try again.', 400));
+        if (!fullName || !email || !password) {
+            return next(new AppError("All fields are required", 400));
         }
+
+        const userExists = await User.findOne({ email });
+
+        if (userExists) {
+            return next(new AppError('Email already exists', 400));
+        }
+
+        const user = await User.create({
+            fullName,
+            email,
+            password,
+            avatar: {
+                public_id: email,
+                secure_url: "https://res.cloudinary.com/demo/image/gravatar/w_120,h_80,c_fill/e3264cf16f34ecd3c7c564f5668cbc1e.jpg"
+            },
+            role
+        });
+
+        if (!user) {
+            return next(new AppError("User resgistration failed, please try again."), 400);
+        }
+
+        // File Upload
+
+        if (req.file) {
+            console.log(req.file);
+            try {
+                const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                    folder: 'lms',
+                    width: 250,
+                    gravity: 'faces',
+                    crop: 'fill'
+                });
+                if (result) {
+                    user.avatar.public_id = result.public_id;
+                    user.avatar.secure_url = result.secure_url;
+
+                    // Remove file
+                    fs.rm(`uploads/${req.file.filename}`);
+                }
+            } catch (e) {
+                return next(new AppError(error || 'File not uploaded, please try again.', 400));
+            }
+        }
+
+        await user.save();
+
+        user.password = undefined;
+
+        const token = await user.generateJWTtoken();
+        res.cookie('token', token, cookieOptions);
+        res.status(201).json({
+            success: true,
+            message: "User registered successfully",
+            user
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
     }
-
-    await user.save();
-
-    user.password = undefined;
-
-    const token = await user.generateJWTtoken();
-    res.cookie('token', token, cookieOptions);
-    res.status(201).json({
-        success: true,
-        message: "User registered successfully",
-        user
-    })
 }
 const login = async (req, res, next) => {
     try {
@@ -103,8 +113,6 @@ const login = async (req, res, next) => {
         return next(new AppError("Email or password does not match", 500));
     }
 }
-
-
 const logout = (req, res) => {
     res.cookie("token", null, {
         secure: true,
@@ -117,6 +125,7 @@ const logout = (req, res) => {
         message: "User logged out successfully"
     })
 }
+
 const getProfile = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -238,7 +247,7 @@ const updateUser = async (req, res, next) => {
     if (!user) {
         return next(new AppError("User does not exist!", 400));
     }
-    
+
     if (req.body.fullName) {
         user.fullName = fullName;
     }
