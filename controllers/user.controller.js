@@ -253,6 +253,7 @@ const updateUser = async (req, res, next) => {
     }
 
     if (req.file) {
+        console.log(req.file);
         await cloudinary.v2.uploader.destroy(user.avatar.public_id);
         try {
             const result = await cloudinary.v2.uploader.upload(req.file.path, {

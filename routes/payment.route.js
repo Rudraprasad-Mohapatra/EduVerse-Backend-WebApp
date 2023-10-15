@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authorizedRoles, isLoggedIn } from "../middlewares/auth.middleware.js";
+import { authorizeSubscriber, authorizedRoles, isLoggedIn } from "../middlewares/auth.middleware.js";
 
 const paymentRoutes = Router();
 
@@ -36,6 +36,7 @@ paymentRoutes.route("/verify")
 
 paymentRoutes.route("/unsubscribe")
     .post(isLoggedIn,
+        authorizeSubscriber,
         cancelSubscription
     );
 

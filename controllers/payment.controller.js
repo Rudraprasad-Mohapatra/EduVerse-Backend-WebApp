@@ -3,7 +3,9 @@ import User from "../models/user.model.js";
 import { razorpay } from "../server.js";
 import crypto from "crypto";
 import Payment from "../models/payment.model.js";
+import { config } from "dotenv";
 
+config();
 const getRazorPayApiKey = async (req, res) => {
     try {
         res.status(200).json({
@@ -20,7 +22,7 @@ const buySubscription = async (req, res, next) => {
     try {
         const { id } = req.user;
         const user = await User.findById(id);
-        console.log(user);
+        console.log("buySubscriptionuser is", user);
         if (!user) {
             return next(new AppError("Unauthorized, please login"));
         }
@@ -29,7 +31,8 @@ const buySubscription = async (req, res, next) => {
         }
 
         const subscription = await razorpay.subscriptions.create({
-            plan_id: "plan_MUlTuM1bfkcH9H",
+            // plan_id: "plan_MUlTuM1bfkcH9H",
+            plan_id: process.env.RAZORPAY_PLAN_ID,
             customer_notify: 1,
             quantity: 5,
             total_count: 6,
