@@ -26,7 +26,7 @@ courseRoutes.route("/:id")
     .post(
         isLoggedIn,
         authorizedRoles("ADMIN"),
-        upload.single('lectureThumbnail'),
+        upload.single('lecture'),
         addLectureToCourseById
     )
 

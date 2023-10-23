@@ -2,6 +2,7 @@ import Course from "../models/course.model.js";
 import AppError from "../utils/error.util.js";
 import fs from "fs/promises";
 import cloudinary from "cloudinary";
+import path from "path";
 const getAllCourses = async (req, res, next) => {
     try {
         const courses = await Course.find({}).select("-lectures");
@@ -136,7 +137,7 @@ const addLectureToCourseById = async (req, res, next) => {
         const { id } = req.params;
 
         if (!title || !description) {
-            return next(new AppError("Course with given id does not exist!"));
+            return next(new AppError("Title and Description are required!"));
         }
 
         const course = await Course.findById(id);
@@ -148,8 +149,9 @@ const addLectureToCourseById = async (req, res, next) => {
         const lectureData = {
             title,
             description,
-            lectureThumbnail: {}
+            lecture: {}
         }
+
 
         if (req.file) {
             try {
@@ -158,14 +160,20 @@ const addLectureToCourseById = async (req, res, next) => {
                     chunk_size: 50000000,
                     resource_type: "video"
                 });
+
                 console.log(JSON.stringify(result));
+                // If Success
                 if (result) {
-                    lectureData.lectureThumbnail.public_id = result.public_id;
-                    lectureData.lectureThumbnail.secure_url = result.secure_url;
+                    lectureData.lecture.public_id = result.public_id;
+                    lectureData.lecture.secure_url = result.secure_url;
                 }
 
                 fs.rm(`uploads/${req.file.filename}`);
             } catch (e) {
+                // Empty the uploads directory without deleting the uploads directory
+                for (const file of await fs.readdir("uploads/")) {
+                    await fs.unlink(path.join("uploads/", file));
+                }
                 return next(new AppError(e.message, 400));
             }
 
@@ -213,7 +221,7 @@ const deleteLecture = async (req, res, next) => {
         }
         else {
             course.lectures.splice(lectureIndex, 1);
-            course.numbersOfLectures=course.lectures.length;
+            course.numbersOfLectures = course.lectures.length;
             await course.save();
 
             return res.status(200).json({
