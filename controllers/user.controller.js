@@ -1,5 +1,4 @@
 import User from "../models/user.model.js";
-import Contact from "../models/contact.model.js";
 import AppError from "../utils/error.util.js";
 import sendEmail from "../utils/sendEmail.js";
 import cloudinary from "cloudinary";
