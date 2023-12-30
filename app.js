@@ -8,14 +8,24 @@ import errorMiddleware from "./middlewares/error.middleware.js"
 import courseRoutes from "./routes/course.route.js";
 import paymentRoutes from './routes/payment.route.js';
 import contactRoutes from "./routes/contact.route.js";
+import AppError from './utils/error.util.js';
 
 config();
 const app = express();
-const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+const frontendUrl = process.env.FRONTEND_URL;
+const devURL = process.env.DEV_URL;
 app.use(express.json());
 
+const allowedOrigins = [frontendUrl, devURL]
 app.use(cors({
-    origin: frontendUrl,
+    origin: function(origin, callback) {
+        if(!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }else{
+            callback(new AppError("Not allowed by CORS"));
+        }
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true
 }));
 
