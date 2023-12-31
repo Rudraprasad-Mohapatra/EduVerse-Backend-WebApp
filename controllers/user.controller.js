@@ -154,7 +154,14 @@ const forgotPassword = async (req, res, next) => {
 
     await user.save();
 
-    const resetPasswordURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    let resetPasswordURL;
+
+    if (process.env.NODE_ENV === 'production') {
+        resetPasswordURL = `${process.env.PRODUCTION_URL}/reset-password/${resetToken}`;
+    } else {
+        resetPasswordURL = `${process.env.DEV_URL}/reset-password/${resetToken}`;
+    }
+
     console.log(resetPasswordURL);
 
     const subject = "Reset Password";
