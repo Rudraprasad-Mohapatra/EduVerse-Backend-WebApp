@@ -12,22 +12,29 @@ import AppError from './utils/error.util.js';
 
 config();
 const app = express();
-const frontendUrl = process.env.FRONTEND_URL;
-const devURL = process.env.DEV_URL;
+const frontendUrlForProduction = process.env.FRONTEND_URL;
+const frontendUrlForDevelopment = process.env.DEV_URL;
+
+console.log(process.env.NODE_ENV);
+
 app.use(express.json());
 
-const allowedOrigins = [frontendUrl, devURL]
+const allowedOrigins = process.env.NODE_ENV === 'production'
+    ? [frontendUrlForProduction]
+    : [frontendUrlForDevelopment, 'http://localhost:5173']; // Add other local development URLs as needed
+
 app.use(cors({
-    origin: function(origin, callback) {
-        if(!origin || allowedOrigins.includes(origin)) {
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
-        }else{
+        } else {
             callback(new AppError("Not allowed by CORS"));
         }
     },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Include the necessary HTTP methods
     credentials: true
 }));
+
 
 app.use(express.urlencoded({ extended: true }));
 
