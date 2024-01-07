@@ -32,7 +32,8 @@ app.use(cors({
         }
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Include the necessary HTTP methods
-    credentials: true
+    credentials: true,
+    optionsSuccessStatus: 204,
 }));
 
 
