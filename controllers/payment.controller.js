@@ -31,16 +31,15 @@ const buySubscription = async (req, res, next) => {
         }
 
         const subscription = await razorpay.subscriptions.create({
-            // plan_id: "plan_MUlTuM1bfkcH9H",
             plan_id: process.env.RAZORPAY_PLAN_ID,
             customer_notify: 1,
-            quantity: 5,
-            total_count: 6,
+            quantity: 1,
+            total_count: 1,
             addons: [
                 {
                     item: {
                         name: "Delivery charges",
-                        amount: 30000,
+                        amount: 300,
                         currency: "INR"
                     }
                 }
