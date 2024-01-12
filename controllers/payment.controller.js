@@ -122,7 +122,7 @@ const verifySubscription = async (req, res, next) => {
     });
 }
 
-const cancelSubscription = async (req, res) => {
+const cancelSubscription = async (req, res, next) => {
     try {
         const { id } = req.user;
 
