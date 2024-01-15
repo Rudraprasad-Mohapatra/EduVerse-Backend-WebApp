@@ -9,6 +9,7 @@ import courseRoutes from "./routes/course.route.js";
 import paymentRoutes from './routes/payment.route.js';
 import contactRoutes from "./routes/contact.route.js";
 import AppError from './utils/error.util.js';
+import statRoutes from "./routes/stat.route.js"
 
 config();
 const app = express();
@@ -54,6 +55,8 @@ app.use("/api/v1/course", courseRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 
 app.use("/api/v1/contact", contactRoutes);
+
+app.use("/api/v1/admin/stats", statRoutes);
 
 
 app.all("*", (req, res) => {
