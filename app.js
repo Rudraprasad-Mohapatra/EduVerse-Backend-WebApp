@@ -44,10 +44,6 @@ app.use(cookieParser());
 
 app.use(morgan("dev"));
 
-app.use("/", function (req, res) {
-    res.send("Hello User !")
-})
-
 app.use("/ping", function (req, res) {
     res.send("Pong")
 })
