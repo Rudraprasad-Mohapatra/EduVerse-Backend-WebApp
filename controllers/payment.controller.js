@@ -22,7 +22,6 @@ const buySubscription = async (req, res, next) => {
     try {
         const { id } = req.user;
         const user = await User.findById(id);
-        console.log("buySubscriptionuser is", user);
         if (!user) {
             return next(new AppError("Unauthorized, please login"));
         }
@@ -34,7 +33,7 @@ const buySubscription = async (req, res, next) => {
             plan_id: process.env.RAZORPAY_PLAN_ID,
             customer_notify: 1,
             quantity: 1,
-            total_count: 1,
+            total_count: 2,
             addons: [
                 {
                     item: {
@@ -53,7 +52,6 @@ const buySubscription = async (req, res, next) => {
                 notify_email: "gaurav.kumar@example.com"
             }
         })
-        // console.log(subscription);
         user.subscription.id = subscription.id;
         user.subscription.status = subscription.status;
         await user.save();
@@ -78,6 +76,7 @@ const fetchSubscriptionById = async (req, res, next) => {
             subscriptionDetails
         })
     } catch (err) {
+        console.error("Error fetching subscription:", err);
         return next(new AppError(err.message, err.status));
     }
 }
